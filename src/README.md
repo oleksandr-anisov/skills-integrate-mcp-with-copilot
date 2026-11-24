@@ -4,8 +4,9 @@ A super simple FastAPI application that allows students to view and sign up for 
 
 ## Features
 
-- View all available extracurricular activities
-- Sign up for activities
+- View all activities and their current participants without logging in
+- Allow teachers to sign in before registering or unregistering students
+- Keep teacher credentials in a local JSON file with salted password hashes
 
 ## Getting Started
 
@@ -25,12 +26,32 @@ A super simple FastAPI application that allows students to view and sign up for 
    - API documentation: http://localhost:8000/docs
    - Alternative documentation: http://localhost:8000/redoc
 
+## Configure teacher accounts
+
+Create a teacher account from the repository root:
+
+```sh
+python src/manage_teachers.py teacher-username
+```
+
+The script prompts for a password and stores only a salted PBKDF2 hash in
+`src/teachers.json`. That file is ignored by Git. To use a different file,
+set `TEACHER_CREDENTIALS_FILE` to the same path when managing accounts and
+running the application.
+
+Teacher sessions use an HTTP-only cookie and expire after eight hours. Sessions
+are held in memory and are cleared when the server restarts.
+
 ## API Endpoints
 
-| Method | Endpoint                                                          | Description                                                         |
-| ------ | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
-| GET    | `/activities`                                                     | Get all activities with their details and current participant count |
-| POST   | `/activities/{activity_name}/signup?email=student@mergington.edu` | Sign up for an activity                                             |
+| Method | Endpoint                                                          | Description                                                          |
+| ------ | ----------------------------------------------------------------- | -------------------------------------------------------------------- |
+| GET    | `/activities`                                                     | Public list of activities and current participant counts             |
+| GET    | `/auth/status`                                                    | Check whether the current browser has a teacher session               |
+| POST   | `/auth/login`                                                      | Sign in with a teacher username and password                           |
+| POST   | `/auth/logout`                                                     | End the current teacher session                                        |
+| POST   | `/activities/{activity_name}/signup?email=student@mergington.edu` | Teacher-only: sign up a student                                        |
+| DELETE | `/activities/{activity_name}/unregister?email=student@mergington.edu` | Teacher-only: unregister a student                                 |
 
 ## Data Model
 
